@@ -145,11 +145,11 @@ struct AddRecipeView: View {
     }
 }
 
-  
 
 
-#Preview {
-    AddRecipeView { recipe in
-        print("Mock save: \(recipe)")
-    }
-}
+
+//#Preview {
+//    AddRecipeView { recipe in
+//        print("Mock save: \(recipe)")
+//    }
+//}

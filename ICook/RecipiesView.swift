@@ -78,7 +78,6 @@ struct RecipiesView: View {
                 }
             }
             .navigationTitle("Recipes")
-            .offset(y: 10)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: {
@@ -89,7 +88,6 @@ struct RecipiesView: View {
                             .frame(width: 35, height: 35)
                             .foregroundColor(.orange)
                             .bold()
-                            .offset(y: 45)
                     }
                 }
             }
@@ -100,9 +98,6 @@ struct RecipiesView: View {
                     isAddRecipeViewPresented = false
                 })
             }
-//            .sheet(item: $selectedRecipe) { recipe in
-//                RecipeDetailView(recipe: recipe)
-//            }
         }
         .onAppear {
             loadRecipes() // Carica le ricette all'avvio
@@ -124,6 +119,8 @@ struct RecipiesView: View {
         }
     }
 }
+
+
 
 
 

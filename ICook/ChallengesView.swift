@@ -5,15 +5,19 @@
 //  Created by Fabrizio Vollaro on 10/12/24.
 //
 
+
+        
+
 import SwiftUI
 
 struct ChallengesView: View {
     @State private var selectedRecipes: Set<UUID> = [] // Ricette selezionate
     @State private var recipes: [Recipe] = [
-        Recipe(name: "Pasta", ingredients: "Pasta, Tomato Sauce", procedure: "", image: nil),
-        Recipe(name: "Pizza", ingredients: "Mozzarella, Tomato", procedure: "", image: nil),
-        Recipe(name: "Salad", ingredients: "Lettuce, Tomatoes", procedure: "", image: nil),
-        Recipe(name: "Soup", ingredients: "Carrots, Potatoes", procedure: "", image: nil)
+        Recipe(name: "Carbonara", ingredients: "Pasta, Eggs, Pecorino Cheese, Guanciale, Pepper", procedure: "", image: nil),
+        Recipe(name: "Amatriciana", ingredients: "Pasta, Tomato, Pecorino Cheese, Guanciale, Pepper", procedure: "", image: nil),
+        Recipe(name: "Cacio e Pepe", ingredients: "Pasta, Pecorino Cheese, Pepper", procedure: "", image: nil),
+        Recipe(name: "Gricia", ingredients: "Pasta, Pecorino Cheese, Pepper, Guanciale", procedure: "", image: nil)
+    
     ]
     @State private var isGameStarted = false // Stato per iniziare il gioco
 
@@ -23,7 +27,7 @@ struct ChallengesView: View {
                 Text("Select Recipes for the Challenge")
                     .font(.title2)
                     .bold()
-                    .foregroundColor(.orange)
+                    .foregroundColor(.black)
                     .padding()
 
                 ScrollView {

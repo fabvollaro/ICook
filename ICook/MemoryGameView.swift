@@ -15,66 +15,64 @@ struct MemoryGameView: View {
     @State private var isAnswerCorrect: Bool? = nil
 
     var body: some View {
-        VStack{
-            
+        VStack {
             Text("Memory Challenge")
                 .font(.largeTitle)
                 .bold()
                 .foregroundColor(.orange)
-                .offset(y: -50)
-                .padding()
+                .padding(.top, 20)
             
             Image("Mascotte2")
                 .resizable()
-                .scaledToFit() // Adatta l'immagine al contenitore mantenendo le proporzioni
-                .frame(width: 600, height: 300)
-                .offset(y: -50)
+                .scaledToFit()
+                .frame(maxWidth: 300, maxHeight: 200) // Adatta l'immagine a dimensioni più piccole
+                .padding()
 
             if let recipe = currentRecipe {
-                VStack {
+                VStack(spacing: 20) {
                     Text("Which recipe matches these ingredients?")
                         .font(.headline)
-                        .offset(y: -50)
+                    
                     Text(recipe.ingredients)
                         .font(.body)
+                        .multilineTextAlignment(.center)
                         .padding()
                         .background(Color.orange.opacity(0.3))
                         .cornerRadius(15)
-                        .offset(y: -50)
+                    
+                    TextField("Enter Recipe Name", text: $userAnswer)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .padding(.horizontal)
+                        .frame(maxWidth: 300)
+                    
+                    if let isCorrect = isAnswerCorrect {
+                        Text(isCorrect ? "Correct!" : "Wrong!")
+                            .font(.title2)
+                            .foregroundColor(isCorrect ? .green : .red)
+                    }
+
+                    Button(action: checkAnswer) {
+                        Text("Submit Answer")
+                            .bold()
+                            .padding()
+                            .frame(maxWidth: 300)
+                            .background(Color.orange)
+                            .foregroundColor(.white)
+                            .cornerRadius(10)
+                    }
                 }
                 .padding()
-
-                TextField("Enter Recipe Name", text: $userAnswer)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .offset(y: -50)
-                    .padding()
-
-                if let isCorrect = isAnswerCorrect {
-                    Text(isCorrect ? "Correct!" : "Wrong!")
-                        .font(.title2)
-                        .foregroundColor(isCorrect ? .green : .red)
-                }
-
-                Button(action: checkAnswer) {
-                    Text("Submit Answer")
-                        .bold()
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(Color.orange)
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
-                        .offset(y: -50)
-                }
-                .padding(.horizontal)
             } else {
                 Text("You've completed the challenge!")
                     .font(.title2)
                     .bold()
                     .foregroundColor(.green)
+                    .padding()
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity) // Adattamento al contenitore
+        .background(Color.white)
         .onAppear(perform: startGame)
-        .padding()
     }
 
     private func startGame() {
@@ -101,6 +99,7 @@ struct MemoryGameView: View {
         }
     }
 }
+
 
 struct MemoryGameView_Previews: PreviewProvider {
     static var previews: some View {
