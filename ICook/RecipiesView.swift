@@ -36,16 +36,18 @@ struct RecipiesView: View {
                                                 .frame(width: 80, height: 80)
                                                 .clipShape(Circle())
                                                 .shadow(radius: 5)
-                                        }
+                                                                            }
                                         VStack(alignment: .leading) {
                                             Text(recipe.name)
                                                 .font(.title2)
                                                 .bold()
                                                 .foregroundColor(recipe.image == nil ? .white : .orange)
+                                                .accessibilityLabel("Recipe name: \(recipe.name).")
                                             Text(recipe.ingredients)
                                                 .font(.subheadline)
                                                 .foregroundColor(recipe.image == nil ? .white.opacity(0.8) : .gray)
                                                 .lineLimit(2)
+                                                .accessibilityLabel("Ingredients: \(recipe.ingredients).")
                                         }
                                         Spacer()
                                     }
@@ -58,6 +60,7 @@ struct RecipiesView: View {
                                             .stroke(Color.orange, lineWidth: 3)
                                     )
                                     .shadow(color: .gray.opacity(0.4), radius: 10, x: 0, y: 5)
+                                    .accessibilityElement(children: .combine) // Tratta l'intera scheda come un unico elemento
                                 }
                                 .onTapGesture {
                                     selectedRecipe = recipe
@@ -70,6 +73,12 @@ struct RecipiesView: View {
                                         }
                                     } label: {
                                         Label("Delete", systemImage: "trash")
+                                    }
+                                }
+                                .accessibilityAction(named: "Delete \(recipe.name)") {
+                                    if let index = recipes.firstIndex(where: { $0.id == recipe.id }) {
+                                        recipes.remove(at: index)
+                                        saveRecipes()
                                     }
                                 }
                             }
@@ -88,6 +97,7 @@ struct RecipiesView: View {
                             .frame(width: 35, height: 35)
                             .foregroundColor(.orange)
                             .bold()
+                            .accessibilityLabel("Add a new recipe.")
                     }
                 }
             }
@@ -97,6 +107,7 @@ struct RecipiesView: View {
                     saveRecipes() // Salva dopo l'aggiunta
                     isAddRecipeViewPresented = false
                 })
+                .accessibilityLabel("Add Recipe View. Fill in details to create a new recipe.")
             }
         }
         .onAppear {
@@ -119,6 +130,7 @@ struct RecipiesView: View {
         }
     }
 }
+
 
 
 

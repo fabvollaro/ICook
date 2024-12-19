@@ -8,7 +8,6 @@
 import SwiftUI
 import UIKit
 
-
 struct ImagePicker: UIViewControllerRepresentable {
     @Binding var selectedImage: UIImage?
     @Environment(\.dismiss) var dismiss
@@ -17,6 +16,7 @@ struct ImagePicker: UIViewControllerRepresentable {
         let picker = UIImagePickerController()
         picker.delegate = context.coordinator
         picker.sourceType = .photoLibrary
+        picker.accessibilityLabel = "Image picker. Select an image from your photo library."
         return picker
     }
 
@@ -33,7 +33,7 @@ struct ImagePicker: UIViewControllerRepresentable {
             self.parent = parent
         }
 
-        func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]) {
             if let uiImage = info[.originalImage] as? UIImage {
                 parent.selectedImage = uiImage
             }
@@ -46,37 +46,39 @@ struct ImagePicker: UIViewControllerRepresentable {
     }
 }
 
-
-
-
-
 struct AddRecipeView: View {
     @Environment(\.dismiss) var dismiss
-    @State private var recipeName: String = "" // Variabile locale per il nome
-    @State private var newIngredient: String = "" // Per aggiungere singoli ingredienti
-    @State private var ingredients: [String] = [] // Lista di ingredienti
+    @State private var recipeName: String = ""
+    @State private var newIngredient: String = ""
+    @State private var ingredients: [String] = []
     @State private var procedure: String = ""
     @State private var selectedImage: UIImage? = nil
     
-    var onSave: (Recipe) -> Void // Callback per salvare la ricetta
-    
+    var onSave: (Recipe) -> Void
+
     var body: some View {
         NavigationView {
             Form {
                 Section(header: Text("Recipe Name")) {
                     TextField("Enter recipe name", text: $recipeName)
+                        .accessibilityLabel("Recipe name text field.")
+                        .accessibilityHint("Enter the name of your recipe.")
                 }
                 
                 Section(header: Text("Ingredients")) {
                     HStack {
                         TextField("Enter an ingredient", text: $newIngredient)
+                            .accessibilityLabel("Ingredient text field.")
+                            .accessibilityHint("Enter the name of an ingredient.")
                         Button(action: {
                             guard !newIngredient.isEmpty else { return }
                             ingredients.append(newIngredient)
-                            newIngredient = "" // Pulisce il campo
+                            newIngredient = ""
                         }) {
                             Image(systemName: "plus.circle")
                                 .foregroundColor(.green)
+                                .accessibilityLabel("Add ingredient button.")
+                                .accessibilityHint("Tap to add the entered ingredient.")
                         }
                     }
                     
@@ -85,12 +87,15 @@ struct AddRecipeView: View {
                             ForEach(ingredients, id: \.self) { ingredient in
                                 HStack {
                                     Text(ingredient)
+                                        .accessibilityLabel("Ingredient: \(ingredient).")
                                     Spacer()
                                     Button(action: {
                                         ingredients.removeAll { $0 == ingredient }
                                     }) {
                                         Image(systemName: "trash")
                                             .foregroundColor(.red)
+                                            .accessibilityLabel("Delete ingredient button.")
+                                            .accessibilityHint("Tap to remove \(ingredient) from the list.")
                                     }
                                 }
                             }
@@ -99,18 +104,23 @@ struct AddRecipeView: View {
                         Text("No ingredients added yet.")
                             .foregroundColor(.gray)
                             .italic()
+                            .accessibilityLabel("No ingredients added.")
                     }
                 }
                 
                 Section(header: Text("Procedure")) {
                     TextEditor(text: $procedure)
                         .frame(height: 100)
+                        .accessibilityLabel("Recipe procedure text editor.")
+                        .accessibilityHint("Enter the steps to prepare the recipe.")
                 }
                 
                 Section(header: Text("Add a Photo")) {
                     Button("Select Image") {
                         // Codice per selezionare l'immagine
                     }
+                    .accessibilityLabel("Select image button.")
+                    .accessibilityHint("Tap to choose an image for the recipe.")
                 }
             }
             .navigationTitle("Add Recipe")
@@ -120,24 +130,22 @@ struct AddRecipeView: View {
                         guard !recipeName.isEmpty, !ingredients.isEmpty else { return }
                         let newRecipe = Recipe(
                             name: recipeName,
-                            ingredients: ingredients.joined(separator: ", "), // Unisce gli ingredienti in una stringa
+                            ingredients: ingredients.joined(separator: ", "),
                             procedure: procedure,
                             image: selectedImage
                         )
                         onSave(newRecipe)
                         dismiss()
                     }
+                    .accessibilityLabel("Save recipe button.")
+                    .accessibilityHint("Tap to save the recipe.")
                 }
             }
         }
     }
     
-    
-    
-    
     private func saveRecipe() {
         guard !recipeName.isEmpty, !ingredients.isEmpty else { return }
-        
         print("Recipe Saved:")
         print("Name: \(recipeName)")
         print("Ingredients: \(ingredients)")
@@ -148,8 +156,9 @@ struct AddRecipeView: View {
 
 
 
-//#Preview {
-//    AddRecipeView { recipe in
-//        print("Mock save: \(recipe)")
-//    }
-//}
+
+#Preview {
+    AddRecipeView { recipe in
+        print("Mock save: \(recipe)")
+    }
+}
