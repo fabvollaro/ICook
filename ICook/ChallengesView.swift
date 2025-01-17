@@ -57,7 +57,7 @@ struct ChallengesView: View {
                                 .cornerRadius(25)
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 25)
-                                        .stroke(selectedRecipes.contains(recipe.id) ? Color.orange : Color.gray, lineWidth: 2)
+                                        .stroke(selectedRecipes.contains(recipe.id) ? Color.orange : Color.gray, lineWidth: 1.5)
                                 )
                                 .onTapGesture {
                                     toggleSelection(for: recipe) // Gestisci la selezione

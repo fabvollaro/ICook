@@ -7,253 +7,256 @@
 
 import SwiftUI
 
-
 struct RoundedCorner: Shape {
-var radius: CGFloat = 25.0
-var corners: UIRectCorner = .allCorners
+    var radius: CGFloat = 25.0
+    var corners: UIRectCorner = .allCorners
 
-func path(in rect: CGRect) -> Path {
-let path = UIBezierPath(
-    roundedRect: rect,
-    byRoundingCorners: corners,
-    cornerRadii: CGSize(width: radius, height: radius)
-)
-return Path(path.cgPath)
-}
+    func path(in rect: CGRect) -> Path {
+        let path = UIBezierPath(
+            roundedRect: rect,
+            byRoundingCorners: corners,
+            cornerRadii: CGSize(width: radius, height: radius)
+        )
+        return Path(path.cgPath)
+    }
 }
 
 extension View {
-func cornerRadius(_ radius: CGFloat, corners: UIRectCorner) -> some View {
-clipShape(RoundedCorner(radius: radius, corners: corners))
+    func cornerRadius(_ radius: CGFloat, corners: UIRectCorner) -> some View {
+        clipShape(RoundedCorner(radius: radius, corners: corners))
+    }
 }
-}
-
 
 struct ContentView: View {
     
     @StateObject private var recipeStore = RecipeStore()
-    
     @State private var isBadgesViewPresented = false // Stato per gestire la modale
 
-var body: some View {
+    @State private var showWelcomeText = false // Stato per animare la scritta "Welcome to ICook!"
+    @State private var showInstructions = false // Stato per mostrare le istruzioni dopo un ritardo
 
-NavigationView {
-    
-    ZStack {
-        Color.gray.opacity(0.05)
-            .ignoresSafeArea()
-        
-        VStack{
-            
-            // Rettangolo arrotondato come sfondo per la mascotte
+    var body: some View {
+        NavigationView {
             ZStack {
-                RoundedRectangle(cornerRadius: 25)
-                    .fill(Color.accentColor.opacity(1))
-                    .frame(width: 470, height: 400)
-                .shadow(color: .gray.opacity(0.4), radius: 10, x: 0, y: 5)
-                .accessibilityHidden(true)
+                Color.gray.opacity(0.04)
+                    .shadow(color: .accent.opacity(0.3), radius: 5, x: 0, y: 0)
+                    .ignoresSafeArea()
                 
-                // Inserisci l'immagine sopra il rettangolo
-                    
-                    Text("Welcome to I Cook!")
-                        .font(.title)
-                        .bold()
-                        .foregroundColor(.white)
-                        .padding(.trailing, 110)
-                        .padding(.bottom, 120)
-                        .accessibilityLabel("Welcome to I Cook! A cooking app where you can insert your recipes and face challenges.")
-                
-                Text("Insert your recipes \n and face your \n challenges")
-                    .font(.title2)
-                    .bold()
-                    .foregroundColor(.white)
-                    .padding(.trailing, 160)
-                    .padding(.top, 180)
-                    
-                    
-                    Image("Mascotte3")
-                        .resizable()
-                        .scaledToFit() // Adatta l'immagine al contenitore mantenendo le proporzioni
-                        .frame(width: 600, height: 300)
-                        .offset(x: 115, y: 50)
-                        .accessibilityLabel("A friendly mascot holding a cooking pan.")
-                
-                
-            }
-            .offset(y: -60)
-
-            
-            HStack {
-                // Prima box: Recipes
-                NavigationLink(destination: RecipiesView()) {
-                    VStack(alignment: .leading, spacing: 0) {
-                        // Sezione per il titolo
-                        Text("Recipes")
-                            .font(.title)
-                            .bold()
-                            .foregroundColor(.white)
-                            .padding()
-                            .frame(maxWidth: .infinity, minHeight: 20, alignment: .center) // Allinea il testo a sinistra
-                            .background(Color.accentColor.opacity(1)) // Sfondo per la parte superiore
-                            .cornerRadius(25, corners: [.topLeft, .topRight]) // Angoli arrotondati solo in alto
-                            .accessibilityLabel("Recipes section. Navigate to view your recipes.")
-                        
-                        // Sezione per i contenuti
-                        HStack {
-                            Spacer()
-                            Image("Mascotte2")
-                                .resizable()
-                                .padding()
-                                .accessibilityLabel("Image of a friendly mascot.")
-                            Spacer()
-                        }
-                        .frame(maxWidth: .infinity, minHeight: 150)
-                        .background(Color.accentColor.opacity(1)) // Sfondo inferiore
-                        .cornerRadius(25, corners: [.bottomLeft, .bottomRight]) // Angoli arrotondati solo in basso
-                    }
-                    .frame(width: 180, height: 220)
-                    .shadow(color: .gray.opacity(0.4), radius: 10, x: 0, y: 5)
-                    .overlay(
+                VStack {
+                    // Rettangolo arrotondato come sfondo per la mascotte
+                    ZStack {
                         RoundedRectangle(cornerRadius: 25)
-                            .stroke(Color.orange, lineWidth: 3)
-                    )
-                    .accessibilityElement(children: .combine) // Raggruppa tutto come un singolo elemento accessibile
-                }
-                
-                // Seconda box: Challenges
-                NavigationLink(destination: ChallengesView()) {
-                    VStack(alignment: .leading, spacing: 0) {
-                        // Sezione per il titolo
-                        Text("Challenges")
-                            .font(.title)
-                            .bold()
-                            .foregroundColor(.white)
-                            .padding()
-                            .frame(maxWidth: .infinity, minHeight: 20, alignment: .center) // Allinea il testo a sinistra
-                            .background(Color.accentColor.opacity(1)) // Sfondo per la parte superiore
-                            .cornerRadius(25, corners: [.topLeft, .topRight]) // Angoli arrotondati solo in alto
-                            .accessibilityLabel("Challenges section. Navigate to explore challenges.")
+                            .fill(Color.gray.opacity(0.04))
+                            .frame(width: 470, height: 400)
+                            .shadow(color: .accent.opacity(0.9), radius: 5, x: 0, y: 0)
+                            .accessibilityHidden(true)
                         
-                        // Sezione per i contenuti
-                        HStack {
-                            Spacer()
-                            Image("Mascotte2")
-                                .resizable()
-                                .padding()
-                                .accessibilityLabel("Image of a friendly mascot.")
-                            Spacer()
-                        }
-                        .frame(maxWidth: .infinity, minHeight: 150)
-                        .background(Color.accentColor.opacity(1)) // Sfondo inferiore
-                        .cornerRadius(25, corners: [.bottomLeft, .bottomRight]) // Angoli arrotondati solo in basso
+                        // Animazione "Welcome to I Cook!"
+                        Text("Welcome to I Cook!")
+                            .font(.largeTitle)
+                            .bold()
+                            .foregroundColor(.accent)
+                            .padding(.trailing, 50)
+                            .padding(.bottom, 180)
+                            .opacity(showWelcomeText ? 1 : 0) // Controlla visibilità
+                            .offset(y: showWelcomeText ? 0 : -50) // Movimento verticale
+                            .animation(.easeInOut(duration: 1.5), value: showWelcomeText)
+                            .accessibilityLabel("Welcome to I Cook! A cooking app where you can insert your recipes and face challenges.")
+                        
+                        // Animazione "Insert your recipes and face your challenges"
+                        Text(" Insert your recipes \n and face your \n challenges")
+                            .font(.title)
+//                            .bold()
+                            .foregroundColor(.black)
+                            .padding(.trailing, 140)
+                            .padding(.top, 230)
+                            .opacity(showInstructions ? 1 : 0) // Controlla visibilità
+                            .animation(.easeInOut(duration: 1).delay(0), value: showInstructions)
+                        
+                        // Mascotte
+                        Image("Mascotte3")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 600, height: 300)
+                            .padding(.leading, 235)
+                            .padding(.top, 100)
+                            .accessibilityLabel("A friendly mascot holding a cooking pan.")
                     }
-                    .frame(width: 180, height: 220)
-                    .shadow(color: .gray.opacity(0.4), radius: 10, x: 0, y: 5)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 25)
-                            .stroke(Color.orange, lineWidth: 3)
-                    )
-                    .accessibilityElement(children: .combine) // Raggruppa tutto come un singolo elemento accessibile
-                }
-            }
-            .offset(y: -40)
-
-            
-            VStack(alignment: .leading, spacing: 0) {
-                // Sezione per il titolo e il pulsante "See All"
-                HStack {
-                    Text("Awards")
-                        .font(.title)
-                        .bold()
-                        .foregroundColor(.white)
-                        .accessibilityLabel("Awards Section. Here are your awards.")
+                    .padding(.top, -70)
                     
                     Spacer()
                     
-                    Button(action: {
-                        isBadgesViewPresented = true
-                    }) {
-                        Text("See All")
-                            .font(.headline)
-                            .foregroundColor(.white)
-                    }
-                    .accessibilityLabel("See all awards.")
-                    .accessibilityAction(named: "View all awards") {
-                        isBadgesViewPresented = true
-                    }
-                }
-                .accessibilityElement(children: .combine) // Combina gli elementi per una lettura coerente
-                .padding()
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color.accentColor.opacity(1)) // Sfondo comune per titolo e pulsante
-                .cornerRadius(25, corners: [.topLeft, .topRight]) // Angoli arrotondati solo in alto
-
-                
-                // Sezione per i contenuti
-                HStack {
-                    Spacer()
-                    Circle()
-                        .fill(Color.gray.opacity(0.2)) // Colore di sfondo opzionale
-                                .frame(width: 80, height: 80)
-                                .overlay(
-                                    Image("badge1T") // Nome della tua immagine
+                    // Box Ricette e Sfide
+                    HStack {
+                        // Prima box: Recipes
+                        NavigationLink(destination: RecipiesView()) {
+                            VStack(alignment: .leading, spacing: 0) {
+                                // Sezione per il titolo
+                                Text("Recipes")
+                                    .font(.title)
+                                    .bold()
+                                    .foregroundColor(.accent)
+                                    .padding()
+                                    .frame(maxWidth: .infinity, minHeight: 20, alignment: .center)
+                                    .background(Color.white.opacity(1))
+                                    .cornerRadius(25, corners: [.topLeft, .topRight])
+                                
+                                // Sezione per i contenuti
+                                HStack {
+                                    Spacer()
+                                    Image("Mascotte2")
                                         .resizable()
-                                        .scaledToFit()
-                                        .frame(width: 80, height: 80)
-                                        .clipShape(Circle())
-                                )
-                                .shadow(color: .black.opacity(0.3), radius: 8, x: 0, y: 5)
-                    Spacer()
-                    Circle()
-                        .fill(Color.gray.opacity(0.2)) // Colore di sfondo opzionale
-                                .frame(width: 80, height: 80)
-                                .overlay(
-                                    Image("badge1F") // Nome della tua immagine
-                                        .resizable()
-                                        .scaledToFit()
-                                        .frame(width: 80, height: 80)
-                                        .clipShape(Circle())
-                                )
-                                .shadow(color: .black.opacity(0.3), radius: 8, x: 0, y: 5)
-                    Spacer()
-                    
-                        Circle()
-                            .fill(Color.gray.opacity(0.2)) // Colore di sfondo opzionale
-                            .frame(width: 80, height: 80)
+                                        .padding()
+                                    Spacer()
+                                }
+                                .frame(maxWidth: .infinity, minHeight: 150)
+                                .background(Color.white.opacity(1))
+                                .cornerRadius(25, corners: [.bottomLeft, .bottomRight])
+                            }
+                            .frame(width: 180, height: 220)
+                            .shadow(color: .black.opacity(0.9), radius: 2, x: 0, y: 0)
                             .overlay(
-                                Image("badge1F") // Nome della tua immagine
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 80, height: 80)
-                                    .clipShape(Circle())
-                           )
-                            .shadow(color: .black.opacity(0.3), radius: 8, x: 0, y: 5)
+                                RoundedRectangle(cornerRadius: 25)
+                                    .stroke(Color.black, lineWidth: 0.1)
+                            )
+                        }
+                        
+                        // Seconda box: Challenges
+                        NavigationLink(destination: ChallengesView()) {
+                            VStack(alignment: .leading, spacing: 0) {
+                                // Sezione per il titolo
+                                Text("Challenges")
+                                    .font(.title)
+                                    .bold()
+                                    .foregroundColor(.accent)
+                                    .padding()
+                                    .frame(maxWidth: .infinity, minHeight: 20, alignment: .center)
+                                    .background(Color.white.opacity(1))
+                                    .cornerRadius(25, corners: [.topLeft, .topRight])
+                                
+                                // Sezione per i contenuti
+                                HStack {
+                                    Spacer()
+                                    Image("Mascotte2")
+                                        .resizable()
+                                        .padding()
+                                    Spacer()
+                                }
+                                .frame(maxWidth: .infinity, minHeight: 150)
+                                .background(Color.white.opacity(1))
+                                .cornerRadius(25, corners: [.bottomLeft, .bottomRight])
+                            }
+                            .frame(width: 180, height: 220)
+                            .shadow(color: .black.opacity(0.9), radius: 2, x: 0, y: 0)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 25)
+                                    .stroke(Color.black, lineWidth: 0.1)
+                            )
+                        }
+                    }
+                    .padding(.bottom, 35)
                     
-                    
-                    Spacer()
+                    // Sezione Awards
+                    VStack(alignment: .leading, spacing: 0) {
+                        HStack {
+                            Text("Awards")
+                                .font(.title)
+                                .bold()
+                                .foregroundColor(.accent)
+                            
+                            Spacer()
+                            
+                            Button(action: {
+                                isBadgesViewPresented = true
+                            }) {
+                                Text("See All")
+                                    .font(.headline)
+                                    .foregroundColor(.accent)
+                            }
+                        }
+                        .padding()
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(Color.white.opacity(1))
+                        .cornerRadius(25, corners: [.topLeft, .topRight])
+                        
+                        // Sezione per i contenuti
+                                       HStack {
+                                           Spacer()
+                                           Circle()
+                                               .fill(Color.gray.opacity(0.2)) // Colore di sfondo opzionale
+                                                       .frame(width: 80, height: 80)
+                                                       .overlay(
+                                                           Image("badge1T") // Nome della tua immagine
+                                                               .resizable()
+                                                               .scaledToFit()
+                                                               .frame(width: 80, height: 80)
+                                                               .clipShape(Circle())
+                                                       )
+                                                       .shadow(color: .black.opacity(0.3), radius: 8, x: 0, y: 5)
+                                           Spacer()
+                                           Circle()
+                                               .fill(Color.gray.opacity(0.2)) // Colore di sfondo opzionale
+                                                       .frame(width: 80, height: 80)
+                                                       .overlay(
+                                                           Image("badge1F") // Nome della tua immagine
+                                                               .resizable()
+                                                               .scaledToFit()
+                                                               .frame(width: 80, height: 80)
+                                                               .clipShape(Circle())
+                                                       )
+                                                       .shadow(color: .black.opacity(0.3), radius: 8, x: 0, y: 5)
+                                           Spacer()
+                                           
+                                               Circle()
+                                                   .fill(Color.gray.opacity(0.2)) // Colore di sfondo opzionale
+                                                   .frame(width: 80, height: 80)
+                                                   .overlay(
+                                                       Image("badge1F") // Nome della tua immagine
+                                                           .resizable()
+                                                           .scaledToFit()
+                                                           .frame(width: 80, height: 80)
+                                                           .clipShape(Circle())
+                                                  )
+                                                   .shadow(color: .black.opacity(0.3), radius: 8, x: 0, y: 5)
+                                           
+                                           
+                                           Spacer()
+                                       }
+                                       .frame(maxWidth: .infinity, minHeight: 100)
+                                       .background(Color.white.opacity(1)) // Sfondo inferiore
+                                       .cornerRadius(25, corners: [.bottomLeft, .bottomRight]) // Angoli arrotondati solo in basso
+                                   }
+                                   .frame(width: 370, height: 150)
+                                   .shadow(color: .black.opacity(1), radius: 2, x: 0, y: 0)
+                                   .sheet(isPresented: $isBadgesViewPresented) {
+                                       BadgesView()
+                                   }
+                                   .padding(.bottom, 0)
+                                   .overlay(
+                                       RoundedRectangle(cornerRadius: 25)
+                                        .stroke(Color.black, lineWidth: 0.1)
+                                           .frame(width: 370, height: 168) // Dimensioni personalizzate
+                                   )
+
+
                 }
-                .frame(maxWidth: .infinity, minHeight: 100)
-                .background(Color.accentColor.opacity(1)) // Sfondo inferiore
-                .cornerRadius(25, corners: [.bottomLeft, .bottomRight]) // Angoli arrotondati solo in basso
+                
             }
-            .frame(width: 370, height: 150)
-            .shadow(color: .gray.opacity(0.4), radius: 10, x: 0, y: 5)
-            .sheet(isPresented: $isBadgesViewPresented) {
-                BadgesView()
+            .onAppear {
+                // Attiva l'animazione
+                withAnimation {
+                    showWelcomeText = true
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                    withAnimation {
+                        showInstructions = true
+                    }
+                }
             }
-            .offset(y: -10)
-            
-        } //End VStack
-        
+        }
     }
-    
-} //End Nav View
-
-
-} //End Body
-} //End View
-
+}
 
 #Preview {
-ContentView()
+    ContentView()
 }

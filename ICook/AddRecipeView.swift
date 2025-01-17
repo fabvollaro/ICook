@@ -53,6 +53,7 @@ struct AddRecipeView: View {
     @State private var ingredients: [String] = []
     @State private var procedure: String = ""
     @State private var selectedImage: UIImage? = nil
+    @State private var isImagePickerPresented: Bool = false // Stato per mostrare l'ImagePicker
     
     var onSave: (Recipe) -> Void
 
@@ -76,7 +77,7 @@ struct AddRecipeView: View {
                             newIngredient = ""
                         }) {
                             Image(systemName: "plus.circle")
-                                .foregroundColor(.green)
+                                .foregroundColor(.accentColor)
                                 .accessibilityLabel("Add ingredient button.")
                                 .accessibilityHint("Tap to add the entered ingredient.")
                         }
@@ -93,7 +94,7 @@ struct AddRecipeView: View {
                                         ingredients.removeAll { $0 == ingredient }
                                     }) {
                                         Image(systemName: "trash")
-                                            .foregroundColor(.red)
+                                            .foregroundColor(.accentColor)
                                             .accessibilityLabel("Delete ingredient button.")
                                             .accessibilityHint("Tap to remove \(ingredient) from the list.")
                                     }
@@ -116,8 +117,22 @@ struct AddRecipeView: View {
                 }
                 
                 Section(header: Text("Add a Photo")) {
+                    if let image = selectedImage {
+                        Image(uiImage: image)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(maxHeight: 200)
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
+                            .shadow(radius: 5)
+                    } else {
+                        Text("No image selected")
+                            .foregroundColor(.gray)
+                            .italic()
+                            .accessibilityLabel("No image selected.")
+                    }
+                    
                     Button("Select Image") {
-                        // Codice per selezionare l'immagine
+                        isImagePickerPresented = true // Mostra l'ImagePicker
                     }
                     .accessibilityLabel("Select image button.")
                     .accessibilityHint("Tap to choose an image for the recipe.")
@@ -141,8 +156,13 @@ struct AddRecipeView: View {
                     .accessibilityHint("Tap to save the recipe.")
                 }
             }
+            .sheet(isPresented: $isImagePickerPresented) {
+                ImagePicker(selectedImage: $selectedImage)
+            }
         }
     }
+
+
     
     private func saveRecipe() {
         guard !recipeName.isEmpty, !ingredients.isEmpty else { return }

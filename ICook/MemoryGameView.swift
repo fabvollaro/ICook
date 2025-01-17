@@ -19,7 +19,7 @@ struct MemoryGameView: View {
             Text("Memory Challenge")
                 .font(.largeTitle)
                 .bold()
-                .foregroundColor(.orange)
+                .foregroundColor(.black)
                 .padding(.top, 20)
             
             Image("Mascotte2")
