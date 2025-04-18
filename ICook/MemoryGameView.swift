@@ -11,8 +11,9 @@ struct MemoryGameView: View {
     let selectedRecipes: [Recipe] // Ricette selezionate
     @State private var shuffledIngredients: [String] = []
     @State private var currentRecipe: Recipe?
-    @State private var userAnswer: String = ""
+    @State private var selectedAnswer: UUID? = nil
     @State private var isAnswerCorrect: Bool? = nil
+    @State private var showingOptions: Bool = false
 
     var body: some View {
         VStack {
@@ -25,7 +26,7 @@ struct MemoryGameView: View {
             Image("Mascotte2")
                 .resizable()
                 .scaledToFit()
-                .frame(maxWidth: 300, maxHeight: 200) // Adatta l'immagine a dimensioni più piccole
+                .frame(maxWidth: 300, maxHeight: 200)
                 .padding()
 
             if let recipe = currentRecipe {
@@ -40,10 +41,35 @@ struct MemoryGameView: View {
                         .background(Color.orange.opacity(0.3))
                         .cornerRadius(15)
                     
-                    TextField("Enter Recipe Name", text: $userAnswer)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .padding(.horizontal)
+                    // Bottone per mostrare le opzioni
+                    Button(action: {
+                        showingOptions = true
+                    }) {
+                        HStack {
+                            Text(selectedAnswer == nil ? "Select a recipe" :
+                                selectedRecipes.first(where: { $0.id == selectedAnswer })?.name ?? "")
+                                .foregroundColor(selectedAnswer == nil ? .gray : .black)
+                            
+                            Spacer()
+                            
+                            Image(systemName: "chevron.down")
+                                .foregroundColor(.gray)
+                        }
+                        .padding()
                         .frame(maxWidth: 300)
+                        .background(Color.white)
+                        .cornerRadius(8)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(Color.gray, lineWidth: 1)
+                        )
+                    }
+                    .actionSheet(isPresented: $showingOptions) {
+                        ActionSheet(
+                            title: Text("Choose a recipe"),
+                            buttons: createActionSheetButtons()
+                        )
+                    }
                     
                     if let isCorrect = isAnswerCorrect {
                         Text(isCorrect ? "Correct!" : "Wrong!")
@@ -56,10 +82,12 @@ struct MemoryGameView: View {
                             .bold()
                             .padding()
                             .frame(maxWidth: 300)
-                            .background(Color.orange)
+                            .background(selectedAnswer == nil ? Color.gray : Color.orange)
                             .foregroundColor(.white)
                             .cornerRadius(10)
                     }
+                    .disabled(selectedAnswer == nil)
+                    //.opacity(selectedAnswer == nil ? 0.6 : 1)
                 }
                 .padding()
             } else {
@@ -70,32 +98,49 @@ struct MemoryGameView: View {
                     .padding()
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity) // Adattamento al contenitore
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.white)
         .onAppear(perform: startGame)
+    }
+
+    private func createActionSheetButtons() -> [ActionSheet.Button] {
+        var buttons: [ActionSheet.Button] = selectedRecipes.map { recipe in
+            .default(Text(recipe.name)) {
+                selectedAnswer = recipe.id
+                isAnswerCorrect = nil
+            }
+        }
+        
+        buttons.append(.cancel())
+        return buttons
     }
 
     private func startGame() {
         guard !selectedRecipes.isEmpty else { return }
         shuffledIngredients = selectedRecipes.flatMap { $0.ingredients.split(separator: ",").map(String.init) }.shuffled()
         currentRecipe = selectedRecipes.first
+        selectedAnswer = nil
+        isAnswerCorrect = nil
     }
 
     private func checkAnswer() {
-        guard let recipe = currentRecipe else { return }
-        if userAnswer.lowercased() == recipe.name.lowercased() {
-            isAnswerCorrect = true
-            // Passa alla prossima ricetta
-            if let currentIndex = selectedRecipes.firstIndex(where: { $0.id == recipe.id }),
-               currentIndex < selectedRecipes.count - 1 {
-                currentRecipe = selectedRecipes[currentIndex + 1]
-                userAnswer = ""
-                isAnswerCorrect = nil
-            } else {
-                currentRecipe = nil // Fine del gioco
+        guard let recipe = currentRecipe, let answer = selectedAnswer else { return }
+        
+        let isCorrect = answer == recipe.id
+        isAnswerCorrect = isCorrect
+        
+        if isCorrect {
+            // Passa alla prossima ricetta dopo un breve ritardo
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                if let currentIndex = selectedRecipes.firstIndex(where: { $0.id == recipe.id }),
+                   currentIndex < selectedRecipes.count - 1 {
+                    currentRecipe = selectedRecipes[currentIndex + 1]
+                    selectedAnswer = nil
+                    isAnswerCorrect = nil
+                } else {
+                    currentRecipe = nil // Fine del gioco
+                }
             }
-        } else {
-            isAnswerCorrect = false
         }
     }
 }

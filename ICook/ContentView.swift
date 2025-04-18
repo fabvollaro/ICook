@@ -7,10 +7,16 @@
 
 import SwiftUI
 
+// MARK: - Utilities
 struct RoundedCorner: Shape {
-    var radius: CGFloat = 25.0
-    var corners: UIRectCorner = .allCorners
-
+    var radius: CGFloat
+    var corners: UIRectCorner
+    
+    init(radius: CGFloat = 25, corners: UIRectCorner = .allCorners) {
+        self.radius = radius
+        self.corners = corners
+    }
+    
     func path(in rect: CGRect) -> Path {
         let path = UIBezierPath(
             roundedRect: rect,
@@ -25,229 +31,222 @@ extension View {
     func cornerRadius(_ radius: CGFloat, corners: UIRectCorner) -> some View {
         clipShape(RoundedCorner(radius: radius, corners: corners))
     }
+    
+    /// Applies a consistent card style to a view
+    func cardStyle(backgroundColor: Color = .accentColor.opacity(0.95), shadowRadius: CGFloat = 4) -> some View {
+        self
+            .background(backgroundColor)
+            .cornerRadius(25)
+            .shadow(color: .black.opacity(0.2), radius: shadowRadius, x: 0, y: 2)
+    }
 }
 
-struct ContentView: View {
-    
-    @StateObject private var recipeStore = RecipeStore()
-    @State private var isBadgesViewPresented = false // Stato per gestire la modale
+// MARK: - Theme Constants
+struct AppTheme {
+    static let backgroundColor = Color.gray.opacity(0.04)
+    static let cardColor = Color.accentColor.opacity(0.95)
+    static let textPrimary = Color.white
+    static let textSecondary = Color.black
+    static let spacing: CGFloat = 20
+    static let cornerRadius: CGFloat = 25
+}
 
-    @State private var showWelcomeText = false // Stato per animare la scritta "Welcome to ICook!"
-    @State private var showInstructions = false // Stato per mostrare le istruzioni dopo un ritardo
+// MARK: - Subcomponents
+struct NavigationCard<Destination: View>: View {
+    let title: String
+    let destination: Destination
+    let imageAsset: String
+    let width: CGFloat
+    let height: CGFloat
+    
+    var body: some View {
+        NavigationLink(destination: destination) {
+            VStack(alignment: .leading, spacing: 0) {
+                // Title section
+                Text(title)
+                    .font(.title2.bold())
+                    .foregroundColor(AppTheme.textPrimary)
+                    .padding()
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .background(AppTheme.cardColor)
+                    .cornerRadius(AppTheme.cornerRadius, corners: [.topLeft, .topRight])
+                
+                // Content section
+                Image(imageAsset)
+                    .resizable()
+                    .scaledToFit()
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background(AppTheme.cardColor)
+                    .cornerRadius(AppTheme.cornerRadius, corners: [.bottomLeft, .bottomRight])
+            }
+            .frame(width: width, height: height)
+            .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 2)
+        }
+    }
+}
+
+struct BadgeCircle: View {
+    let imageAsset: String
+    
+    var body: some View {
+        Circle()
+            .fill(Color.gray.opacity(0.2))
+            .frame(width: 80, height: 80)
+            .overlay(
+                Image(imageAsset)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 70, height: 70)
+                    .clipShape(Circle())
+            )
+            .shadow(color: .black.opacity(0.3), radius: 4, x: 0, y: 2)
+    }
+}
+
+struct WelcomeSection: View {
+    @Binding var showWelcomeText: Bool
+    @Binding var showInstructions: Bool
+    
+    var body: some View {
+        ZStack {
+            // Welcome animation
+            Text("Welcome to I Cook!")
+                .font(.largeTitle.bold())
+                .foregroundColor(AppTheme.textSecondary)
+                .padding(.trailing, 50)
+                .padding(.bottom, 180)
+                .opacity(showWelcomeText ? 1 : 0)
+                .offset(y: showWelcomeText ? 0 : -50)
+                .animation(.easeInOut(duration: 1.5), value: showWelcomeText)
+                .accessibilityLabel("Welcome to I Cook! A cooking app where you can insert your recipes and face challenges.")
+            
+            // Instructions animation
+            Text("Insert your recipes\nand face your\nchallenges")
+                .font(.title)
+                .foregroundColor(AppTheme.textSecondary)
+                .padding(.trailing, 140)
+                .padding(.top, 230)
+                .opacity(showInstructions ? 1 : 0)
+                .animation(.easeInOut(duration: 1), value: showInstructions)
+            
+            // Mascot image
+            Image("Mascotte3")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 500, height: 250)
+                .padding(.leading, 200)
+                .padding(.top, 100)
+                .accessibilityLabel("A friendly mascot holding a cooking pan.")
+        }
+        .padding(.top, -50)
+    }
+}
+
+struct AwardsSection: View {
+    @Binding var isBadgesViewPresented: Bool
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            // Header section
+            HStack {
+                Text("Awards")
+                    .font(.title2.bold())
+                    .foregroundColor(AppTheme.textPrimary)
+                
+                Spacer()
+                
+                Button(action: {
+                    isBadgesViewPresented = true
+                }) {
+                    Text("See All")
+                        .font(.headline)
+                        .foregroundColor(AppTheme.textPrimary)
+                }
+            }
+            .padding()
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(AppTheme.cardColor)
+            .cornerRadius(AppTheme.cornerRadius, corners: [.topLeft, .topRight])
+            
+            // Badges section
+            HStack{
+                Spacer()
+                BadgeCircle(imageAsset: "badge1T")
+                Spacer()
+                BadgeCircle(imageAsset: "badge1F")
+                Spacer()
+                BadgeCircle(imageAsset: "badge1F")
+                Spacer()
+            }
+            .padding(.vertical)
+            .frame(maxWidth: .infinity)
+            .background(AppTheme.cardColor)
+            .cornerRadius(AppTheme.cornerRadius, corners: [.bottomLeft, .bottomRight])
+        }
+        .frame(width: 370)
+        .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 2)
+    }
+}
+
+// MARK: - Main View
+struct ContentView: View {
+    @StateObject private var recipeStore = RecipeStore()
+    @State private var isBadgesViewPresented = false
+    @State private var showWelcomeText = false
+    @State private var showInstructions = false
 
     var body: some View {
         NavigationView {
             ZStack {
-                Color.gray.opacity(0.04)
-                    .shadow(color: .accent.opacity(0.3), radius: 5, x: 0, y: 0)
+                AppTheme.backgroundColor
                     .ignoresSafeArea()
                 
-                VStack {
-                    // Rettangolo arrotondato come sfondo per la mascotte
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 25)
-                            .fill(Color.gray.opacity(0.04))
-                            .frame(width: 470, height: 400)
-                            .shadow(color: .accent.opacity(0.9), radius: 5, x: 0, y: 0)
-                            .accessibilityHidden(true)
-                        
-                        // Animazione "Welcome to I Cook!"
-                        Text("Welcome to I Cook!")
-                            .font(.largeTitle)
-                            .bold()
-                            .foregroundColor(.accent)
-                            .padding(.trailing, 50)
-                            .padding(.bottom, 180)
-                            .opacity(showWelcomeText ? 1 : 0) // Controlla visibilità
-                            .offset(y: showWelcomeText ? 0 : -50) // Movimento verticale
-                            .animation(.easeInOut(duration: 1.5), value: showWelcomeText)
-                            .accessibilityLabel("Welcome to I Cook! A cooking app where you can insert your recipes and face challenges.")
-                        
-                        // Animazione "Insert your recipes and face your challenges"
-                        Text(" Insert your recipes \n and face your \n challenges")
-                            .font(.title)
-//                            .bold()
-                            .foregroundColor(.black)
-                            .padding(.trailing, 140)
-                            .padding(.top, 230)
-                            .opacity(showInstructions ? 1 : 0) // Controlla visibilità
-                            .animation(.easeInOut(duration: 1).delay(0), value: showInstructions)
-                        
-                        // Mascotte
-                        Image("Mascotte3")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 600, height: 300)
-                            .padding(.leading, 235)
-                            .padding(.top, 100)
-                            .accessibilityLabel("A friendly mascot holding a cooking pan.")
-                    }
-                    .padding(.top, -70)
+                VStack(spacing: AppTheme.spacing) {
+                    // Welcome section with animations and mascot
+                    WelcomeSection(
+                        showWelcomeText: $showWelcomeText,
+                        showInstructions: $showInstructions
+                    )
                     
                     Spacer()
                     
-                    // Box Ricette e Sfide
-                    HStack {
-                        // Prima box: Recipes
-                        NavigationLink(destination: RecipiesView()) {
-                            VStack(alignment: .leading, spacing: 0) {
-                                // Sezione per il titolo
-                                Text("Recipes")
-                                    .font(.title)
-                                    .bold()
-                                    .foregroundColor(.accent)
-                                    .padding()
-                                    .frame(maxWidth: .infinity, minHeight: 20, alignment: .center)
-                                    .background(Color.white.opacity(1))
-                                    .cornerRadius(25, corners: [.topLeft, .topRight])
-                                
-                                // Sezione per i contenuti
-                                HStack {
-                                    Spacer()
-                                    Image("Mascotte2")
-                                        .resizable()
-                                        .padding()
-                                    Spacer()
-                                }
-                                .frame(maxWidth: .infinity, minHeight: 150)
-                                .background(Color.white.opacity(1))
-                                .cornerRadius(25, corners: [.bottomLeft, .bottomRight])
-                            }
-                            .frame(width: 180, height: 220)
-                            .shadow(color: .black.opacity(0.9), radius: 2, x: 0, y: 0)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 25)
-                                    .stroke(Color.black, lineWidth: 0.1)
-                            )
-                        }
+                    // Navigation cards
+                    HStack(spacing: AppTheme.spacing) {
+                        NavigationCard(
+                            title: "Recipes",
+                            destination: RecipiesView(),
+                            imageAsset: "Mascotte2",
+                            width: 170,
+                            height: 200
+                        )
                         
-                        // Seconda box: Challenges
-                        NavigationLink(destination: ChallengesView()) {
-                            VStack(alignment: .leading, spacing: 0) {
-                                // Sezione per il titolo
-                                Text("Challenges")
-                                    .font(.title)
-                                    .bold()
-                                    .foregroundColor(.accent)
-                                    .padding()
-                                    .frame(maxWidth: .infinity, minHeight: 20, alignment: .center)
-                                    .background(Color.white.opacity(1))
-                                    .cornerRadius(25, corners: [.topLeft, .topRight])
-                                
-                                // Sezione per i contenuti
-                                HStack {
-                                    Spacer()
-                                    Image("Mascotte2")
-                                        .resizable()
-                                        .padding()
-                                    Spacer()
-                                }
-                                .frame(maxWidth: .infinity, minHeight: 150)
-                                .background(Color.white.opacity(1))
-                                .cornerRadius(25, corners: [.bottomLeft, .bottomRight])
-                            }
-                            .frame(width: 180, height: 220)
-                            .shadow(color: .black.opacity(0.9), radius: 2, x: 0, y: 0)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 25)
-                                    .stroke(Color.black, lineWidth: 0.1)
-                            )
-                        }
+                        NavigationCard(
+                            title: "Challenges",
+                            destination: ChallengesView(),
+                            imageAsset: "Mascotte2",
+                            width: 170,
+                            height: 200
+                        )
                     }
-                    .padding(.bottom, 35)
                     
-                    // Sezione Awards
-                    VStack(alignment: .leading, spacing: 0) {
-                        HStack {
-                            Text("Awards")
-                                .font(.title)
-                                .bold()
-                                .foregroundColor(.accent)
-                            
-                            Spacer()
-                            
-                            Button(action: {
-                                isBadgesViewPresented = true
-                            }) {
-                                Text("See All")
-                                    .font(.headline)
-                                    .foregroundColor(.accent)
-                            }
-                        }
-                        .padding()
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(Color.white.opacity(1))
-                        .cornerRadius(25, corners: [.topLeft, .topRight])
-                        
-                        // Sezione per i contenuti
-                                       HStack {
-                                           Spacer()
-                                           Circle()
-                                               .fill(Color.gray.opacity(0.2)) // Colore di sfondo opzionale
-                                                       .frame(width: 80, height: 80)
-                                                       .overlay(
-                                                           Image("badge1T") // Nome della tua immagine
-                                                               .resizable()
-                                                               .scaledToFit()
-                                                               .frame(width: 80, height: 80)
-                                                               .clipShape(Circle())
-                                                       )
-                                                       .shadow(color: .black.opacity(0.3), radius: 8, x: 0, y: 5)
-                                           Spacer()
-                                           Circle()
-                                               .fill(Color.gray.opacity(0.2)) // Colore di sfondo opzionale
-                                                       .frame(width: 80, height: 80)
-                                                       .overlay(
-                                                           Image("badge1F") // Nome della tua immagine
-                                                               .resizable()
-                                                               .scaledToFit()
-                                                               .frame(width: 80, height: 80)
-                                                               .clipShape(Circle())
-                                                       )
-                                                       .shadow(color: .black.opacity(0.3), radius: 8, x: 0, y: 5)
-                                           Spacer()
-                                           
-                                               Circle()
-                                                   .fill(Color.gray.opacity(0.2)) // Colore di sfondo opzionale
-                                                   .frame(width: 80, height: 80)
-                                                   .overlay(
-                                                       Image("badge1F") // Nome della tua immagine
-                                                           .resizable()
-                                                           .scaledToFit()
-                                                           .frame(width: 80, height: 80)
-                                                           .clipShape(Circle())
-                                                  )
-                                                   .shadow(color: .black.opacity(0.3), radius: 8, x: 0, y: 5)
-                                           
-                                           
-                                           Spacer()
-                                       }
-                                       .frame(maxWidth: .infinity, minHeight: 100)
-                                       .background(Color.white.opacity(1)) // Sfondo inferiore
-                                       .cornerRadius(25, corners: [.bottomLeft, .bottomRight]) // Angoli arrotondati solo in basso
-                                   }
-                                   .frame(width: 370, height: 150)
-                                   .shadow(color: .black.opacity(1), radius: 2, x: 0, y: 0)
-                                   .sheet(isPresented: $isBadgesViewPresented) {
-                                       BadgesView()
-                                   }
-                                   .padding(.bottom, 0)
-                                   .overlay(
-                                       RoundedRectangle(cornerRadius: 25)
-                                        .stroke(Color.black, lineWidth: 0.1)
-                                           .frame(width: 370, height: 168) // Dimensioni personalizzate
-                                   )
-
-
+                    // Awards section
+                    AwardsSection(isBadgesViewPresented: $isBadgesViewPresented)
+                        .padding(.bottom, AppTheme.spacing)
                 }
-                
+                .padding()
+            }
+            .sheet(isPresented: $isBadgesViewPresented) {
+                BadgesView()
             }
             .onAppear {
-                // Attiva l'animazione
+                // Activate animations
                 withAnimation {
                     showWelcomeText = true
                 }
-                DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                
+                // Delay showing instructions
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
                     withAnimation {
                         showInstructions = true
                     }
@@ -256,7 +255,6 @@ struct ContentView: View {
         }
     }
 }
-
 #Preview {
     ContentView()
 }

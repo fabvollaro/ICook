@@ -38,7 +38,7 @@ struct BadgesView: View {
                                 .frame(width: 150, height: 150)
                                 .overlay(
                                     Circle()
-                                        .stroke(Color.orange, lineWidth: 5)
+                                        .stroke(Color.orange, lineWidth: 0)
                                 )
                                 .shadow(color: .black.opacity(0.5), radius: 8, x: 0, y: 5)
                                 .overlay(
@@ -62,7 +62,7 @@ struct BadgesView: View {
                             
                                 .overlay(
                                     Circle()
-                                        .stroke(Color.orange, lineWidth: 2)
+                                        .stroke(Color.black, lineWidth: 2)
                                 )
                                 .shadow(color: .black.opacity(0.5), radius: 8, x: 0, y: 5)
                                 .overlay(

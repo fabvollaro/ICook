@@ -12,13 +12,7 @@ import SwiftUI
 
 struct ChallengesView: View {
     @State private var selectedRecipes: Set<UUID> = [] // Ricette selezionate
-    @State private var recipes: [Recipe] = [
-        Recipe(name: "Carbonara", ingredients: "Pasta, Eggs, Pecorino Cheese, Guanciale, Pepper", procedure: "", image: nil),
-        Recipe(name: "Amatriciana", ingredients: "Pasta, Tomato, Pecorino Cheese, Guanciale, Pepper", procedure: "", image: nil),
-        Recipe(name: "Cacio e Pepe", ingredients: "Pasta, Pecorino Cheese, Pepper", procedure: "", image: nil),
-        Recipe(name: "Gricia", ingredients: "Pasta, Pecorino Cheese, Pepper, Guanciale", procedure: "", image: nil)
-    
-    ]
+    @State private var recipes: [Recipe] = []
     @State private var isGameStarted = false // Stato per iniziare il gioco
 
     var body: some View {
@@ -31,41 +25,47 @@ struct ChallengesView: View {
                     .padding()
 
                 ScrollView {
-                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 20) {
-                        ForEach(recipes) { recipe in
-                            VStack {
-                                HStack {
-                                    if let image = recipe.image {
-                                        Image(uiImage: image)
-                                            .resizable()
-                                            .scaledToFill()
-                                            .frame(width: 60, height: 60)
-                                            .clipShape(Circle())
-                                            .shadow(radius: 5)
+                    if recipes.isEmpty {
+                        Text("No recipes available. Create some recipes first!")
+                            .foregroundColor(.gray)
+                            .padding(.top, 50)
+                    } else {
+                        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 20) {
+                            ForEach(recipes) { recipe in
+                                VStack {
+                                    HStack {
+//                                        if let image = recipe.image {
+//                                            Image(uiImage: image)
+//                                                .resizable()
+//                                                .scaledToFill()
+//                                                .frame(width: 60, height: 60)
+//                                                .clipShape(Circle())
+//                                                .shadow(radius: 5)
+//                                        }
+                                        VStack(alignment: .leading) {
+                                            Text(recipe.name)
+                                                .font(.title3)
+                                                .bold()
+                                                .foregroundColor(selectedRecipes.contains(recipe.id) ? Color.white : Color.orange)
+                                        }
+                                        Spacer()
                                     }
-                                    VStack(alignment: .leading) {
-                                        Text(recipe.name)
-                                            .font(.title3)
-                                            .bold()
-                                            .foregroundColor(selectedRecipes.contains(recipe.id) ? Color.white : Color.orange)
+                                    .padding()
+                                    .frame(width: 170, height: 100)
+                                    .background(selectedRecipes.contains(recipe.id) ? Color.orange.opacity(0.7) : Color.white)
+                                    .cornerRadius(25)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 25)
+                                            .stroke(selectedRecipes.contains(recipe.id) ? Color.orange : Color.gray, lineWidth: 1)
+                                    )
+                                    .onTapGesture {
+                                        toggleSelection(for: recipe) // Gestisci la selezione
                                     }
-                                    Spacer()
-                                }
-                                .padding()
-                                .frame(width: 170, height: 100)
-                                .background(selectedRecipes.contains(recipe.id) ? Color.orange.opacity(0.7) : Color.white)
-                                .cornerRadius(25)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 25)
-                                        .stroke(selectedRecipes.contains(recipe.id) ? Color.orange : Color.gray, lineWidth: 1.5)
-                                )
-                                .onTapGesture {
-                                    toggleSelection(for: recipe) // Gestisci la selezione
                                 }
                             }
                         }
+                        .padding()
                     }
-                    .padding()
                 }
 
                 Button(action: {
@@ -89,6 +89,9 @@ struct ChallengesView: View {
                     recipes.first(where: { $0.id == id })
                 })
             }
+            .onAppear {
+                loadRecipes() // Carica le ricette da UserDefaults quando la vista appare
+            }
         }
     }
 
@@ -98,6 +101,21 @@ struct ChallengesView: View {
             selectedRecipes.remove(recipe.id)
         } else {
             selectedRecipes.insert(recipe.id)
+        }
+    }
+    
+    // MARK: - Caricamento Ricette
+    
+    /// Carica ricette da UserDefaults (stesso metodo usato in RecipesView)
+    private func loadRecipes() {
+        if let data = UserDefaults.standard.data(forKey: "recipes"),
+           let decodedRecipes = try? JSONDecoder().decode([Recipe].self, from: data) {
+            recipes = decodedRecipes
+            
+            // Pulizia delle selezioni per assicurarsi che non ci siano ID non più validi
+            selectedRecipes = selectedRecipes.filter { recipeId in
+                recipes.contains { $0.id == recipeId }
+            }
         }
     }
 }

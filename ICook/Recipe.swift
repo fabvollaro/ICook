@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct Recipe: Identifiable, Codable { // Aggiunto Codable
+struct Recipe: Identifiable, Codable, Equatable { // Aggiunto Codable
     let id: UUID
     var name: String
     var ingredients: String
