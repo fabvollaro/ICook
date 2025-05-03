@@ -14,6 +14,8 @@ struct MemoryGameView: View {
     @State private var selectedAnswer: UUID? = nil
     @State private var isAnswerCorrect: Bool? = nil
     @State private var showingOptions: Bool = false
+    @Environment(\.presentationMode) var presentationMode // Per dismissare la vista
+    @Binding var returnToRoot: Bool // Binding per tornare alla root view
 
     var body: some View {
         VStack {
@@ -87,15 +89,37 @@ struct MemoryGameView: View {
                             .cornerRadius(10)
                     }
                     .disabled(selectedAnswer == nil)
-                    //.opacity(selectedAnswer == nil ? 0.6 : 1)
                 }
                 .padding()
             } else {
-                Text("You've completed the challenge!")
-                    .font(.title2)
-                    .bold()
-                    .foregroundColor(.green)
-                    .padding()
+                VStack(spacing: 20) {
+                    Text("You've completed the challenge!")
+                        .font(.title2)
+                        .bold()
+                        .foregroundColor(.green)
+                        .padding()
+                    
+                    // Pulsante Home
+                    Button(action: {
+                        // Imposta il flag per tornare alla root view
+                        returnToRoot = true
+                        // Chiude la vista corrente
+                        presentationMode.wrappedValue.dismiss()
+                    }) {
+                        HStack {
+                            Image(systemName: "house.fill")
+                                .font(.title2)
+                            Text("Return Home")
+                                .font(.headline)
+                        }
+                        .padding()
+                        .frame(minWidth: 200)
+                        .background(AppTheme.cardColor)
+                        .foregroundColor(.white)
+                        .cornerRadius(15)
+                        .shadow(color: .black.opacity(0.2), radius: 5, x: 0, y: 2)
+                    }
+                }
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -146,11 +170,11 @@ struct MemoryGameView: View {
 }
 
 
-struct MemoryGameView_Previews: PreviewProvider {
-    static var previews: some View {
-        MemoryGameView(selectedRecipes: [
-            Recipe(name: "Pasta", ingredients: "Pasta, Tomato Sauce", procedure: "Boil pasta, add sauce", image: nil),
-            Recipe(name: "Pizza", ingredients: "Dough, Tomato, Cheese", procedure: "Bake with toppings", image: nil)
-        ])
-    }
-}
+//struct MemoryGameView_Previews: PreviewProvider {
+//    static var previews: some View {
+//        MemoryGameView(selectedRecipes: [
+//            Recipe(name: "Pasta", ingredients: "Pasta, Tomato Sauce", procedure: "Boil pasta, add sauce", image: nil),
+//            Recipe(name: "Pizza", ingredients: "Dough, Tomato, Cheese", procedure: "Bake with toppings", image: nil)
+//        ])
+//    }
+//}

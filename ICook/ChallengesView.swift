@@ -6,92 +6,93 @@
 //
 
 
-        
-
 import SwiftUI
 
 struct ChallengesView: View {
     @State private var selectedRecipes: Set<UUID> = [] // Ricette selezionate
     @State private var recipes: [Recipe] = []
     @State private var isGameStarted = false // Stato per iniziare il gioco
+    @State private var returnToRoot = false // Flag per tornare alla root
+    @Environment(\.presentationMode) var presentationMode
 
     var body: some View {
-        NavigationView {
-            VStack {
-                Text("Select Recipes for the Challenge")
-                    .font(.title2)
-                    .bold()
-                    .foregroundColor(.black)
-                    .padding()
+        VStack {
+            Text("Select Recipes for the Challenge")
+                .font(.title3)
+                .bold()
+                .foregroundColor(.gray)
+                .padding()
 
-                ScrollView {
-                    if recipes.isEmpty {
-                        Text("No recipes available. Create some recipes first!")
-                            .foregroundColor(.gray)
-                            .padding(.top, 50)
-                    } else {
-                        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 20) {
-                            ForEach(recipes) { recipe in
-                                VStack {
-                                    HStack {
-//                                        if let image = recipe.image {
-//                                            Image(uiImage: image)
-//                                                .resizable()
-//                                                .scaledToFill()
-//                                                .frame(width: 60, height: 60)
-//                                                .clipShape(Circle())
-//                                                .shadow(radius: 5)
-//                                        }
-                                        VStack(alignment: .leading) {
-                                            Text(recipe.name)
-                                                .font(.title3)
-                                                .bold()
-                                                .foregroundColor(selectedRecipes.contains(recipe.id) ? Color.white : Color.orange)
-                                        }
-                                        Spacer()
+            ScrollView {
+                if recipes.isEmpty {
+                    Text("No recipes available. Create some recipes first!")
+                        .foregroundColor(.gray)
+                        .padding(.top, 50)
+                } else {
+                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 20) {
+                        ForEach(recipes) { recipe in
+                            VStack {
+                                HStack {
+                                    VStack(alignment: .leading) {
+                                        Text(recipe.name)
+                                            .font(.title3)
+                                            .bold()
+                                            .foregroundColor(selectedRecipes.contains(recipe.id) ? Color.white : Color.orange)
                                     }
-                                    .padding()
-                                    .frame(width: 170, height: 100)
-                                    .background(selectedRecipes.contains(recipe.id) ? Color.orange.opacity(0.7) : Color.white)
-                                    .cornerRadius(25)
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 25)
-                                            .stroke(selectedRecipes.contains(recipe.id) ? Color.orange : Color.gray, lineWidth: 1)
-                                    )
-                                    .onTapGesture {
-                                        toggleSelection(for: recipe) // Gestisci la selezione
-                                    }
+                                    Spacer()
+                                }
+                                .padding()
+                                .frame(width: 170, height: 100)
+                                .background(selectedRecipes.contains(recipe.id) ? Color.orange.opacity(0.7) : Color.white)
+                                .cornerRadius(25)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 25)
+                                        .stroke(selectedRecipes.contains(recipe.id) ? Color.orange : Color.gray, lineWidth: 1)
+                                )
+                                .onTapGesture {
+                                    toggleSelection(for: recipe) // Gestisci la selezione
                                 }
                             }
                         }
-                        .padding()
                     }
+                    .padding()
                 }
+            }
 
-                Button(action: {
-                    isGameStarted = true // Inizia la sfida
-                }) {
-                    Text("Start Challenge")
-                        .bold()
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(selectedRecipes.isEmpty ? Color.gray : Color.orange)
-                        .cornerRadius(10)
-                        .padding(.horizontal)
-                }
-                .disabled(selectedRecipes.isEmpty)
-                .padding(.bottom)
+            Button(action: {
+                isGameStarted = true // Inizia la sfida
+            }) {
+                Text("Start Challenge")
+                    .bold()
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(selectedRecipes.isEmpty ? Color.gray : Color.orange)
+                    .cornerRadius(10)
+                    .padding(.horizontal)
             }
-            .navigationTitle("Challenges")
-            .sheet(isPresented: $isGameStarted) {
-                MemoryGameView(selectedRecipes: selectedRecipes.compactMap { id in
+            .disabled(selectedRecipes.isEmpty)
+            .padding(.bottom)
+        }
+        .navigationTitle("Challenges")
+        .sheet(isPresented: $isGameStarted) {
+            MemoryGameView(
+                selectedRecipes: selectedRecipes.compactMap { id in
                     recipes.first(where: { $0.id == id })
-                })
+                },
+                returnToRoot: $returnToRoot
+            )
+        }
+        .onChange(of: returnToRoot) { newValue in
+            if newValue {
+                // Se il flag è true, dismissare questa vista per tornare alla root
+                presentationMode.wrappedValue.dismiss()
+                // Reset del flag
+                returnToRoot = false
             }
-            .onAppear {
-                loadRecipes() // Carica le ricette da UserDefaults quando la vista appare
-            }
+        }
+        .onAppear {
+            loadRecipes() // Carica le ricette da UserDefaults quando la vista appare
         }
     }
 
